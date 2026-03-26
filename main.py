@@ -1,5 +1,6 @@
 from neo4j import GraphDatabase
 import csv
+import os
 
 class Neo4jApp:
     def __init__(self, uri, user, password, database="t9regalado"):
@@ -17,20 +18,19 @@ class Neo4jApp:
     def create_node(self, label, properties):
         query = f"MERGE (n:{label} {{"
         for key, value in properties.items():
-            query += f"{key}: '{value}', "
+            query += f"""{key}: "{value}", """
         query = query[: - 2] + "}) RETURN n"
         print(query)
         with self.driver.session(database=self.database) as session:
             result = session.run(query)
             return list(result)
 
-    def load_csv_nodes(self, filename, label):
+    def load_csv_nodes(self, filename , label:str):
 
         with open(filename) as csvfile:
             spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
             i = 0
-            label = ""
-            properties = ["name"]
+            properties = []
             for x in spamreader:
                 if i == 0:
                     properties  = x
@@ -74,14 +74,16 @@ def main():
     user = "neo4j"
     password = "neo5jneo5j"
 
-    app = Neo4jApp(uri, user, password)
+    app = Neo4jApp(uri, user, password, database="mdg2026")
     try:
         query = "call db.info();"
         results = app.run_query(query)
         for record in results:
             print(record)
-        app.load_csv_nodes("./Estados.CSV")
-        app.load_csv_rels("./Fronteras.CSV")
+        
+        root_dir = ("./gameofthrones/data/")
+        for i in range(1,9):
+            app.load_csv_nodes( f"{root_dir}got-s{i}-nodes.csv"  , "Character" )
 
     finally:
         app.close()
