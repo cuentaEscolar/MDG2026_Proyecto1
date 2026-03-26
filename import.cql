@@ -21,11 +21,13 @@ LOAD CSV WITH HEADERS FROM "http://localhost:8080/lotr/all_interactions.csv" AS 
 WITH (row.source) AS origen, 
      (row.target) AS destino,
      row.book as book,
-     row.value as interactions 
+     toInteger(row.value) as interactions 
 
 MATCH (o:Character {name: origen})
 MATCH (d:Character {name: destino})
 MERGE (o)-[r:TALKS_TO]-(d)
+SET r.book = book ,
+r.interactions = interactions
 ;
 
 
